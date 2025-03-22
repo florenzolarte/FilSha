@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fileshare</title>
+
+  <!-- Favicons -->
+  <link href="{{ url_for('static', filename='img/favicon.png') }}" rel="icon">
+  <link href="{{ url_for('static', filename='img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{{ url_for('static', filename='vendor/boxicons/css/boxicons.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/quill/quill.snow.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/quill/quill.bubble.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/remixicon/remixicon.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/simple-datatables/style.css') }}" rel="stylesheet">
+
+  <!-- Bootstrap -->
+  <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/bootstrap-icons/font/bootstrap-icons.css') }}" rel="stylesheet">
+  <!-- SparkMD5 Library for MD5 Hashing -->
+  <script src="{{ url_for('static', filename='js/user/spark-md5.min.js') }}"></script>
+
+  <!-- Template Main CSS File -->
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+  <!-- Custom Styles -->
+
+  <style>
+    .rename-btn {
+      background-color: #ffc107;
+      border-color: #ffc107;
+    }
+    .rename-btn:hover {
+      background-color: #e0a800;
+      border-color: #d39e00;
+    }
+  </style>
+  <style>
+    .form-box {
+      width: 100%;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 30px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      background-color: #fff;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .files-box, .files-shared-with-you {
+      margin-top: 30px;
+      animation: slideIn 1s ease-in-out;
+    }
+
+    .files-box h4, .files-shared-with-you h4 {
+      margin-bottom: 20px;
+    }
+
+    .table {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .table th, .table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .table .btn {
+      margin: 0 5px;
+    }
+
+    .table .btn-sm {
+      font-size: 12px;
+      padding: 5px 10px;
+    }
+
+    .table th {
+      background-color: #f8f9fa;
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      border-color: #28a745;
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+      border-color: #1e7e34;
+    }
+
+    .btn-danger {
+      background-color: #dc3545;
+      border-color: #dc3545;
+    }
+
+    .btn-danger:hover {
+      background-color: #c82333;
+      border-color: #bd2130;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Header and Sidebar Adjustments */
+    .header {
+      padding: 10px 20px;
+    }
+
+    .logo img {
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .toggle-sidebar-btn {
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .sidebar {
+      width: 250px;
+      transition: transform 0.3s ease-in-out;
+      position: fixed;
+      height: 100%;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+
+    .sidebar.collapsed {
+      transform: translateX(-250px);
+    }
+
+    .main {
+      margin-left: 250px;
+      transition: margin-left 0.3s ease-in-out;
+    }
+
+    .main.expanded {
+      margin-left: 0;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-250px);
+      }
+
+      .sidebar.collapsed {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+      }
+
+      .main.expanded {
+        margin-left: 250px;
+      }
+    }
+
+    /* Flash Messages */
+    .flash-message {
+      background-color: #f44336;
+      color: white;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      text-align: center;
+      animation: slideDown 0.5s ease-in-out, fadeOut 0.5s ease-in-out 2.5s forwards;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .flash-message::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      transform: scaleX(0);
+      transform-origin: left;
+      animation: progressBar 3s linear forwards;
+    }
+
+    .success-message {
+      background-color: #4CAF50;
+      color: white;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      text-align: center;
+      animation: slideDown 0.5s ease-in-out, fadeOut 0.5s ease-in-out 2.5s forwards;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .success-message::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      transform: scaleX(0);
+      transform-origin: left;
+      animation: progressBar 3s linear forwards;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+
+    @keyframes progressBar {
+      from {
+        transform: scaleX(0);
+      }
+      to {
+        transform: scaleX(1);
+      }
+    }
+
+    .loading {
+      color: #333;
+      font-style: italic;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="header fixed-top d-flex align-items-center">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-list toggle-sidebar-btn me-3" onclick="toggleSidebar()"></i>
+      <a href="{{ url_for('fileshare') }}" class="logo d-flex align-items-center">
+        <img src="{{ url_for('static', filename='img/internet.png') }}" alt="">
+        <span class="d-none d-lg-block">FilSha</span>
+      </a>
+    </div><!-- End Logo -->
+
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-bell"></i>
+          <span class="badge bg-primary badge-number">4</span>
+        </a><!-- End Notification Icon -->
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+          <li class="dropdown-header">
+            You have 4 new notifications
+            <a href="#"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="notification-item">
+            <i class="bi bi-exclamation-circle text-warning"></i>
+            <div>
+              <h4>Lorem Ipsum</h4>
+              <p>Quae dolorem earum veritatis oditseno</p>
+              <p>30 min. ago</p>
+            </div>
+          </li>
+
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="notification-item">
+            <i class="bi bi-info-circle text-primary"></i>
+            <div>
+              <h4>Dicta reprehenderit</h4>
+              <p>Quae dolorem earum veritatis oditseno</p>
+              <p>4 hrs. ago</p>
+            </div>
+          </li>
+
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+          <li class="dropdown-footer">
+            <a href="#">Show all notifications</a>
+          </li>
+
+        </ul><!-- End Notification Dropdown Items -->
+
+      </li><!-- End Notification Nav -->
+      <li class="nav-item dropdown">
+
+        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-chat-left-text"></i>
+          <span class="badge bg-success badge-number">2</span>
+        </a><!-- End Messages Icon -->
+
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow messages">
+          <li class="dropdown-header">
+            You have 2 new messages
+            <a href="{{ url_for('messages') }}"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="message-item">
+            <a href="#">
+              <img src="assets/img/messages-1.jpg" alt="" class="rounded-circle">
+              <div>
+                <h4>Maria Hudson</h4>
+                <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
+                <p>4 hrs. ago</p>
+              </div>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="message-item">
+            <a href="#">
+              <img src="assets/img/messages-2.jpg" alt="" class="rounded-circle">
+              <div>
+                <h4>Anna Nelson</h4>
+                <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
+                <p>6 hrs. ago</p>
+              </div>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="dropdown-footer">
+            <a href="#">Show all messages</a>
+          </li>
+
+        </ul><!-- End Messages Dropdown Items -->
+
+      </li><!-- End Messages Nav -->
+      <li class="nav-item dropdown pe-3">
+        <li class="nav-item dropdown pe-3">
+          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+            <img src="{{ url_for('profile_picture', user_id=current_user.id) }}" alt="Profile" class="rounded-circle" width="40" height="40">
+            <span class="dropdown-toggle ps-2">{{ current_user.username }}</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+
+            <li class="dropdown-header">
+            <h6>{{ current_user.username }}</h6>
+            <span>User</span>
+          </li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="{{ url_for('userprofile') }}">
+                <i class="bi bi-person"></i>
+                <span>My Profile</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="users-profile">
+                <i class="bi bi-gear"></i>
+                <span>Account Settings</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="{{ url_for('userhelp') }}">
+                <i class="bi bi-question-circle"></i>
+                <span>Need Help?</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+                <a class="dropdown-item d-flex align-items-center" href="{{ url_for('logout') }}">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sign Out</span>
+              </a>
+            </li>
+          </ul>
+        </li><!-- End Profile Nav -->
+      </ul>
+    </nav><!-- End Icons Navigation -->
+  </header><!-- End Header -->
+
+  <!-- ======= Sidebar ======= -->
+  <aside id="sidebar" class="sidebar">
+    <ul class="sidebar-nav" id="sidebar-nav">
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{{ url_for('userdashboard') }}">
+          <i class="bi bi-grid"></i>
+          <span>Dashboard</span>
+        </a>
+      </li><!-- End Dashboard Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('fileshare') }}">
+          <i class="bi bi-share"></i>
+          <span>FileShare</span>
+        </a>
+      </li><!-- End FileShare Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{{ url_for('userprofile') }}">
+          <i class="bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li><!-- End Profile Page Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{{ url_for('userhistory') }}">
+          <i class="bi bi-clock-history"></i>
+          <span>History</span>
+        </a>
+      </li><!-- End Contact Page Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{{ url_for('userhelp') }}">
+          <i class="bi bi-headset"></i>
+
+          <span>Help Desk</span>
+        </a>
+      </li><!-- End Contact Page Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{{ url_for('messages') }}">
+          <i class="bi bi-envelope"></i>
+          <span>Messages</span>
+        </a>
+      </li><!-- End Contact Page Nav -->
+    </ul>
+  </aside><!-- End Sidebar -->
+
+  <!-- ======= Main Content ======= -->
+  <main id="main" class="main">
+    <div class="pagetitle">
+      <h2>File Share</h2>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="UserDashboard">Home</a></li>
+          <li class="breadcrumb-item active">File Share</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    
+      <section class="section">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Manage Files</h5>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div id="flash-message" class="{{ 'flash-message' if category == 'danger' else 'success-message' }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+          
+                <!-- File Upload Form -->
+                <form method="POST" enctype="multipart/form-data" onsubmit="handleFileScan(event)">
+                  <div class="mb-3">
+                    <label for="fileUpload" class="form-label">Upload File</label>
+                    <input type="file" class="form-control" id="fileUpload" name="file" required multiple
+                           onchange="validateFileSize(this)">
+                    <small class="form-text text-muted">Maximum file size allowed is 1 GB.</small>
+                    <small id="fileSizeError" class="form-text text-danger" style="display: none;">File size exceeds the maximum limit of 1 GB.</small>
+                  </div>
+                    <div class="mb-3">
+                      <label for="recipient" class="form-label">Recipient</label>
+                      <input type="text" class="form-control" id="recipient" name="shared_with" placeholder="Enter comma-separated usernames" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="expiration_duration" class="form-label">Expiration Duration</label>
+                      <select class="form-control" id="expiration_duration" name="expiration_duration">
+                          <option value="">No Expiration</option>
+                          <option value="1h">1 Hour</option>
+                          <option value="1d">1 Day</option>
+                          <option value="1w">1 Week</option>
+                      </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="delete_after_download" class="form-label">
+                      <input type="checkbox" id="delete_after_download" name="delete_after_download"> Delete after download
+                    </label>
+                  </div>
+                    <div class="text-center">
+                      <button type="submit" class="btn btn-primary">Upload File</button>
+                    </div>
+                  </form>
+
+
+                  <!--Loading files-->
+
+                  <div id="loading-message" class="loading" style="display: none;">Scanning file...</div>
+                    <div id="status-message"></div>
+                  
+                <!-- Your Files Section Below the Form -->
+                <!-- Your Files Section -->
+<!-- Your Files Section -->
+<div class="files-box mt-4">
+  <h4>Your Files</h4>
+  {% if user_files %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>File Name</th>
+          <th>Status</th>
+          <th>Owner</th>
+          <th>Sent To</th>
+          <th>Created Date</th>
+          <th>Expiration Time</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in user_files %}
+          <tr>
+            <td>{{ file.filename }}</td>
+            <td>
+              {% if file.delete_after_download %}
+                <span class="badge bg-danger">Delete After Download</span>
+              {% endif %}
+            </td>
+            <td>{{ file.owner_username }}</td>
+            <td>{{ file.shared_with }}</td>
+            <td>{{ file.created_at }}</td>
+            <td>{{ file.expiration_time if file.expiration_time else 'No Expiration' }}</td>
+            <td>
+              <a href="{{ url_for('download', file_id=file.id) }}" class="btn btn-success btn-sm">Download</a>
+              <button class="btn btn-warning btn-sm rename-btn" 
+          data-file-id="{{ file.id }}" 
+          data-current-filename="{{ file.filename | replace('.' ~ file.filename.split('.') | last, '') }}" 
+          data-bs-toggle="modal" 
+          data-bs-target="#renameFileModal">
+    Rename
+  </button>
+  <form action="{{ url_for('delete_file', file_id=file.id) }}" method="POST" style="display:inline;">
+              <form action="{{ url_for('delete_file', file_id=file.id) }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="no-files">No files uploaded yet.</p>
+  {% endif %}
+</div>
+
+<!-- Files Shared With You Section -->
+<div class="files-shared-with-you mt-4">
+  <h4>Files Shared With You</h4>
+  {% if shared_files %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>File Name</th>
+          <th>Status</th>
+          <th>Owner</th>
+          <th>Created Date</th>
+          <th>Expiration Time</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in shared_files %}
+          <tr>
+            <td>{{ file.filename }}</td>
+            <td>
+              {% if file.delete_after_download %}
+                <span class="badge bg-danger">Delete After Download</span>
+              {% endif %}
+            </td>
+            <td>{{ file.owner_username }}</td>
+            <td>{{ file.created_at }}</td>
+            <td>{{ file.expiration_time if file.expiration_time else 'No Expiration' }}</td>
+            <td>
+              <a href="{{ url_for('download', file_id=file.id) }}" class="btn btn-success btn-sm">Download</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="no-files">No files shared with you yet.</p>
+  {% endif %}
+</div>
+
+    </main><!-- End #main -->
+
+    <!-- ======= Footer ======= -->
+  <footer id="footer" class="footer">
+    <div class="copyright">
+      &copy; Copyright <strong><span>FilSha</span></strong>. All Rights Reserved
+    </div>
+  </footer><!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/simple-datatables/simple-datatables.js') }}"></script>
+
+  <!-- Template Main JS File -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+  <!-- Custom Scripts -->
+  <script>
+    // Function to calculate MD5 hash of a file
+    async function calculateMD5(file) {
+      return new Promise((resolve, reject) => {
+        const spark = new SparkMD5.ArrayBuffer();
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          spark.append(e.target.result);
+          resolve(spark.end()); // Returns the MD5 hash
+        };
+        reader.onerror = () => reject('Error reading file.');
+        reader.readAsArrayBuffer(file); // Start reading the file
+      });
+    }
+
+    // Function to handle file upload and MD5 scanning
+    async function handleFileScan(event) {
+      event.preventDefault();
+
+      const fileInput = document.querySelector('input[name="file"]');
+      const sharedWith = document.querySelector('input[name="shared_with"]').value;
+      const form = event.target;
+
+      if (!fileInput.files.length) {
+        alert('Please select a file to upload.');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const statusMessage = document.getElementById('status-message');
+      const loadingMessage = document.getElementById('loading-message');
+
+      // Show loading indicator
+      loadingMessage.style.display = 'block';
+      statusMessage.textContent = '';
+
+      try {
+        // Calculate MD5 hash
+        const md5Hash = await calculateMD5(file);
+
+        // Send AJAX request to check the file hash
+        const response = await fetch('/scan_file', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: file.name, md5: md5Hash })
+        });
+
+        const result = await response.json();
+        loadingMessage.style.display = 'none';
+
+        if (result.status === 'suspicious') {
+          statusMessage.textContent = 'File flagged as suspicious. Upload rejected.';
+          statusMessage.className = 'flash-message';
+        } else {
+          statusMessage.textContent = 'File is clean. Uploading...';
+          statusMessage.className = 'success-message';
+          form.submit(); // Submit the form for upload
+        }
+      } catch (error) {
+        loadingMessage.style.display = 'none';
+        statusMessage.textContent = 'Error scanning file. Please try again.';
+        statusMessage.className = 'flash-message';
+        console.error('File scanning error:', error);
+      }
+    }
+
+    // Function to toggle sidebar
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const main = document.getElementById('main');
+      sidebar.classList.toggle('collapsed');
+      main.classList.toggle('expanded');
+    }
+
+    // Automatically hide flash messages after 3 seconds
+    setTimeout(function() {
+      var flashMessage = document.getElementById('flash-message');
+      if (flashMessage) {
+        flashMessage.style.opacity = '0';
+        setTimeout(function() {
+          flashMessage.style.display = 'none';
+        }, 500); // Wait for the fade-out animation to complete
+      }
+    }, 3000); // 3000 milliseconds = 3 seconds
+  </script>
+  <script>
+    // Add data attributes to table cells for mobile view
+    document.addEventListener('DOMContentLoaded', function() {
+      const tables = document.querySelectorAll('.table');
+      
+      tables.forEach(table => {
+        const headerCells = table.querySelectorAll('thead th');
+        const headerTexts = Array.from(headerCells).map(cell => cell.textContent.trim());
+        
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          cells.forEach((cell, index) => {
+            if (index < headerTexts.length) {
+              cell.setAttribute('data-label', headerTexts[index]);
+            }
+          });
+        });
+      });
+    });
+  </script>
+
+  <script>
+    function validateFileSize(input) {
+      const maxFileSize = 1024 * 1024 * 1024; // 1 GB in bytes
+      const fileSizeError = document.getElementById('fileSizeError');
+  
+      if (input.files && input.files[0]) {
+          const fileSize = input.files[0].size; // File size in bytes
+  
+          if (fileSize > maxFileSize) {
+              // Show error message
+              fileSizeError.style.display = 'block';
+              // Clear the file input
+              input.value = '';
+          } else {
+              // Hide error message if file size is valid
+              fileSizeError.style.display = 'none';
+          }
+      }
+  }
+  </script>
+
+
+  <script>
+    // Add this script to handle the rename button click
+    document.addEventListener('DOMContentLoaded', function() {
+      const renameButtons = document.querySelectorAll('.rename-btn');
+      renameButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const fileId = this.getAttribute('data-file-id');
+          document.getElementById('file_id').value = fileId;
+        });
+      });
+  
+      // Handle form submission for renaming
+      document.getElementById('renameFileForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const fileId = document.getElementById('file_id').value;
+        const newFilename = document.getElementById('new_filename').value;
+  
+        fetch(`/rename_file/${fileId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `new_filename=${encodeURIComponent(newFilename)}`
+        })
+        .then(response => {
+          if (response.redirected) {
+            window.location.href = response.url;
+          }
+        })
+        .catch(error => {
+          console.error('Error renaming file:', error);
+        });
+      });
+    });
+  </script>
+
+
+
+<!-- Add this modal dialog at the end of the file, before the closing </body> tag -->
+<div class="modal fade" id="renameFileModal" tabindex="-1" aria-labelledby="renameFileModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="renameFileModalLabel">Rename File</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="renameFileForm" method="POST">
+          <div class="mb-3">
+            <label for="new_filename" class="form-label">New Filename</label>
+            <input type="text" class="form-control" id="new_filename" name="new_filename" required>
+          </div>
+          <input type="hidden" id="file_id" name="file_id">
+          <input type="hidden" id="current_filename" name="current_filename">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" form="renameFileForm" class="btn btn-primary">Rename</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

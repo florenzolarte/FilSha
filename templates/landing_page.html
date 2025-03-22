@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FilSha - Secure File Sharing</title>
+  <meta name="description" content="Secure file sharing made simple with FilSha.">
+  <meta name="keywords" content="file sharing, secure login, FilSha">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <style>
+    /* General Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1E4D2B, #62be75);
+      overflow: hidden;
+      color: #333;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: rgba(30, 77, 43, 0.9);
+      padding: 1rem 0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-brand {
+      font-size: 2rem;
+      font-weight: 600;
+      color: white !important;
+      margin-left: 1rem;
+      text-decoration: none;
+    }
+
+    .navbar-brand:hover {
+      color: white !important;
+    }
+
+    /* Button Styles */
+    .btn-primary {
+      background-color: #62be75;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      font-size: 1rem;
+      color: white;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: #4CAF50;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-secondary {
+      background-color: #1E4D2B;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      font-size: 1rem;
+      color: white;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background-color: #62be75;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Hero Section */
+    .hero-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 80px);
+      text-align: center;
+      color: white;
+    }
+
+    .hero-content {
+      max-width: 600px;
+      padding: 2rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-content h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .hero-content p {
+      font-size: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .cta-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .hero-content h1 {
+        font-size: 2rem;
+      }
+
+      .hero-content p {
+        font-size: 1rem;
+      }
+
+      .btn-primary, .btn-secondary {
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="#" class="navbar-brand">FilSha</a>
+      <div class="ms-auto">
+        <a href="{{ url_for('login') }}" class="btn btn-primary me-2">Log in as User</a>
+        <a href="{{ url_for('admin_login') }}" class="btn btn-secondary">Log in as Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Welcome to FilSha</h1>
+      <p>Your trusted platform for secure and seamless file sharing. Share files effortlessly with end-to-end encryption and advanced security features.</p>
+      <div class="cta-buttons">
+        <a href="{{ url_for('login') }}" class="btn btn-primary">Get Started</a>
+        <a href="{{ url_for('admin_login') }}" class="btn btn-secondary">Learn More</a>
+      </div>
+    </div>
+  </section>
+</body>
+</html>
